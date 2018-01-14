@@ -12,7 +12,7 @@ import UIKit
 //NOTE: Using a UITableViewController instead of View Controller with table means delegating etc. is all taken care of.
 class ToDoListViewController: UITableViewController {
 
-    let itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
+    var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -59,7 +59,43 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
         tableView.deselectRow(at: indexPath, animated: true)
     }
         
+    //MARK: Add New Items
+    
+    //This gives the
+    
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
+        var textField = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Item:", message: "", preferredStyle: .alert)
+        
+        //What will happen when user clicks add item button on UI Alert.
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+           
+            //This is error checking code to prevent no submission of an empty to do.
+            if textField.text == "" {
+            
+            } else {
+                
+            self.itemArray.append(textField.text!)
+            
+            //This reloads the UITableView view update with the data that has already been added.
+            self.tableView.reloadData()
+            
+            }
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textField = alertTextField
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
+        
+    }
+    
         
     }
 

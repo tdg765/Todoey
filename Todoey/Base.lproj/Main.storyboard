@@ -25,6 +25,7 @@
                                     <rect key="frame" x="0.0" y="0.0" width="375" height="43.5"/>
                                     <autoresizingMask key="autoresizingMask"/>
                                 </tableViewCellContentView>
+                                <color key="tintColor" red="0.0" green="0.0" blue="0.0" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                             </tableViewCell>
                         </prototypes>
                         <connections>
@@ -32,7 +33,14 @@
                             <outlet property="delegate" destination="UX9-Nf-1JB" id="Z6I-rc-7kC"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Todoey" id="qDP-Ul-w6S"/>
+                    <navigationItem key="navigationItem" title="Todoey" id="qDP-Ul-w6S">
+                        <barButtonItem key="rightBarButtonItem" systemItem="add" id="Dx5-cf-Mrx">
+                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                            <connections>
+                                <action selector="addButtonPressed:" destination="UX9-Nf-1JB" id="0pB-UO-pNg"/>
+                            </connections>
+                        </barButtonItem>
+                    </navigationItem>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="MUh-xg-92J" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
