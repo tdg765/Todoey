@@ -61,7 +61,7 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
         
     //MARK: Add New Items
     
-    //This gives the
+    //This gives the add new items buttons with calling alert box.
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
