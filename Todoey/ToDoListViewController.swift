@@ -14,9 +14,21 @@ class ToDoListViewController: UITableViewController {
 
     var itemArray = ["Find Mike", "Buy Eggos", "Destroy Demogorgon"]
     
+    //Setup up user defaults constant.
+    let defaults = UserDefaults.standard
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
+        
+        //This loads the defaults persistent data into the itemArray.
+        
+        if let items = defaults.array(forKey: "ToDoListArray") as? [String] {
+            
+            itemArray = items
+            
+        }
+        
     }
 
     //MARK: Tableview Data Source Methods
@@ -78,7 +90,10 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
             } else {
                 
             self.itemArray.append(textField.text!)
-            
+                
+            //Update user defaults. Can add any datat type and then associate a key to return it.
+            self.defaults.set(self.itemArray, forKey: "ToDoListArray")
+                
             //This reloads the UITableView view update with the data that has already been added.
             self.tableView.reloadData()
             
