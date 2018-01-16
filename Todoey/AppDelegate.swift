@@ -17,6 +17,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // This happens before the view did losad gets loaded.
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         // Override point for customization after application launch.
+        
+        
+        
         return true
     }
 
