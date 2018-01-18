@@ -7,23 +7,30 @@
 //
 
 import UIKit
+import CoreData
 
 //NOTE: Using a UITableViewController instead of View Controller with table means delegating etc. is all taken care of.
 class ToDoListViewController: UITableViewController {
     
     //This is an array fo item objects.
     var itemArray = [Item]()
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+    //UIApplication class, Shared singleton aobjects which corresponds to the current App, tapping into its delegate.
+    //This allows us to tap into the AppDelegate as an object.
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    
+    //Will be optional until it is set
+    var selectedCategory : Category? {
+        //This runs when a value is set to an optional on declaration.
+        didSet {
+            loadItems()
+        }
+    }
     
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         
-        print(dataFilePath)
-
-        //This loads the defaults persistent data into the itemArray.
-        
-        loadItems()
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
     }
 
@@ -66,6 +73,10 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
         //Essentially this replaces wordy if statement to make it change to opposite value.
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
         
+//        //The order matters. Keep it this way. It deletes rows.
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
+        
         //NOTE: This makes sure the cell does not stay selected.
         tableView.deselectRow(at: indexPath, animated: true)
         
@@ -90,10 +101,13 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
             if textField.text == "" {
             
             } else {
-            
-                let newItem = Item()
-                newItem.title = textField.text!
-                self.itemArray.append(newItem)
+                
+            //Need to use self.context to refer to global context as it is within a closure.
+            let newItem = Item(context: self.context)
+            newItem.title = textField.text!
+            newItem.done = false
+            newItem.parentCategory = self.selectedCategory
+            self.itemArray.append(newItem)
             
             self.saveItems()
             
@@ -113,18 +127,15 @@ override func tableView(_ tableView: UITableView, numberOfRowsInSection section:
 
 //MARK: Model Manipulation Methods
 
-func saveItems() {
-    
-    let encoder = PropertyListEncoder()
+    func    saveItems() {
     
     do {
         
-        let data = try encoder.encode(itemArray)
-        try data.write(to: dataFilePath!)
+      try   context.save()
+   
+    }   catch   {
         
-    } catch {
-        
-        print("Error encoding item array, \(error)")
+        print("Error saving context \(error)")
         
     }
     
@@ -132,17 +143,71 @@ func saveItems() {
      tableView.reloadData()
     
 }
+    //NOTE: This has a default value if nothing is supplied of Item.fetchRequest()
+    
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+        //Says we are requesting data in the form of Item.
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        //This checks to see if double or single predicate to help load items matching predicate query.
+        //Also helps us stop unrapping an optional value.
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredicate
+        }
+        
+        do {
+        itemArray = try context.fetch(request)
 
-    func loadItems() {
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
-            } catch {
-                print("Error decoding array /(error)")
+        } catch {
+            print("Error fetching data from context \(error)")
+        }
+    tableView.reloadData()
+}
+
+}
+
+//This is another way you can add delegates to main view controller.
+//By slitting it up, it means code can be more easily viewed and edited.
+//You must group all protocole methods with protocol.
+
+extension ToDoListViewController: UISearchBarDelegate {
+
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+    
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        //This queries whether title contains the text.
+        //Can read up on predicate.
+        
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
+        
+        loadItems(with: request, predicate: predicate)
+        
+    }
+    //This repopulates the list with full list when search left.
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            loadItems()
+            
+            //Stops search bar being selected or typing in search bar.
+            //This manages the queues where work is being ompleted.
+            //It assigns jobs to threads. We are assigning search bar to main thread.
+            
+            DispatchQueue.main.async {
+                
+                searchBar.resignFirstResponder()
+                
             }
+            
         }
         
     }
-    
 }
+
+
